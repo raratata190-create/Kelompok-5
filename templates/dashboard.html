@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Greenhouse AI Dashboard</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+html{
+    scroll-behavior:smooth;
+}
+
+body{
+    font-family:Arial, sans-serif;
+    background:#04130d;
+    color:white;
+    overflow-x:hidden;
+}
+
+/* ================= HERO ================= */
+
+.hero{
+    position:relative;
+    min-height:100vh;
+    overflow:hidden;
+
+    background:
+    linear-gradient(
+        135deg,
+        rgba(0,0,0,0.75),
+        rgba(0,255,157,0.15)
+    ),
+
+    url('https://images.unsplash.com/photo-1516253593875-bd7ba052fbc5?q=80&w=1600&auto=format&fit=crop');
+
+    background-size:cover;
+    background-position:center;
+}
+
+.hero-overlay{
+    position:absolute;
+    inset:0;
+
+    background:
+    radial-gradient(
+        circle at top right,
+        rgba(0,255,157,0.25),
+        transparent 40%
+    );
+}
+
+/* PARTICLES */
+
+.particles{
+    position:absolute;
+    inset:0;
+    overflow:hidden;
+    z-index:1;
+}
+
+.particles span{
+    position:absolute;
+    width:12px;
+    height:12px;
+    background:rgba(0,255,157,0.4);
+    border-radius:50%;
+    animation:particleFloat 12s linear infinite;
+    bottom:-50px;
+}
+
+.particles span:nth-child(1){
+    left:10%;
+    animation-duration:10s;
+}
+
+.particles span:nth-child(2){
+    left:30%;
+    width:18px;
+    height:18px;
+    animation-duration:14s;
+}
+
+.particles span:nth-child(3){
+    left:50%;
+    animation-duration:9s;
+}
+
+.particles span:nth-child(4){
+    left:70%;
+    width:16px;
+    height:16px;
+    animation-duration:13s;
+}
+
+.particles span:nth-child(5){
+    left:90%;
+    animation-duration:11s;
+}
+
+@keyframes particleFloat{
+
+    0%{
+        transform:translateY(0px) scale(0);
+        opacity:0;
+    }
+
+    20%{
+        opacity:1;
+    }
+
+    100%{
+        transform:translateY(-700px) scale(1.4);
+        opacity:0;
+    }
+}
+
+.hero-content{
+    position:relative;
+    z-index:2;
+
+    width:90%;
+    max-width:1400px;
+
+    margin:auto;
+    padding:100px 0;
+
+    display:grid;
+    grid-template-columns:1.2fr 1fr;
+    gap:40px;
+    align-items:center;
+}
+
+.hero-badge{
+    display:inline-block;
+    padding:12px 24px;
+    border-radius:50px;
+    background:rgba(0,255,157,0.12);
+    border:1px solid rgba(0,255,157,0.3);
+    color:#00ff9d;
+    font-weight:bold;
+    margin-bottom:25px;
+    backdrop-filter:blur(12px);
+}
+
+.hero-left h1{
+    font-size:72px;
+    line-height:1.05;
+    margin-bottom:25px;
+}
+
+.hero-left p{
+    font-size:20px;
+    line-height:1.8;
+    color:#d5d5d5;
+    max-width:700px;
+}
+
+/* HERO STATS */
+
+.hero-stats{
+    display:flex;
+    gap:40px;
+    margin-top:45px;
+    flex-wrap:wrap;
+}
+
+.stat-item h2{
+    font-size:42px;
+    color:#00ff9d;
+    margin-bottom:8px;
+}
+
+.stat-item span{
+    color:#d5d5d5;
+}
+
+.hero-right{
+    display:flex;
+    flex-direction:column;
+    gap:20px;
+}
+
+.floating-card{
+    background:rgba(255,255,255,0.05);
+    border:1px solid rgba(255,255,255,0.08);
+    backdrop-filter:blur(12px);
+    border-radius:25px;
+    padding:25px;
+    display:flex;
+    align-items:center;
+    gap:20px;
+    animation:floatCard 4s ease-in-out infinite;
+}
+
+.floating-card:nth-child(2){
+    animation-delay:1s;
+}
+
+.floating-card:nth-child(3){
+    animation-delay:2s;
+}
+
+@keyframes floatCard{
+
+    0%,100%{
+        transform:translateY(0px);
+    }
+
+    50%{
+        transform:translateY(-10px);
+    }
+}
+
+.floating-icon{
+    width:70px;
+    height:70px;
+    border-radius:20px;
+    background:rgba(0,255,157,0.12);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:32px;
+}
+
+.floating-card h3{
+    margin-bottom:8px;
+}
+
+.floating-card p{
+    color:#aaa;
+}
+
+/* ================= CONTAINER ================= */
+
+.container{
+    width:90%;
+    max-width:1400px;
+    margin:auto;
+    padding:50px 0;
+}
+
+/* ================= CARDS ================= */
+
+.cards{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+    gap:25px;
+}
+
+.card{
+    background:rgba(255,255,255,0.05);
+    border:1px solid rgba(255,255,255,0.08);
+    border-radius:25px;
+    padding:25px;
+    backdrop-filter:blur(15px);
+    transition:0.4s;
+    position:relative;
+    overflow:hidden;
+}
+
+.card:hover{
+    transform:translateY(-10px) scale(1.02);
+    box-shadow:0 0 30px rgba(0,255,157,0.25);
+}
+
+.value{
+    font-size:54px;
+    font-weight:bold;
+    color:#00ff9d;
+    margin-top:15px;
+}
+
+.raw{
+    margin-top:10px;
+    color:#aaa;
+}
+
+.bar{
+    width:100%;
+    height:10px;
+    background:rgba(255,255,255,0.08);
+    border-radius:20px;
+    overflow:hidden;
+    margin-top:20px;
+}
+
+.bar-fill{
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg,#00ff9d,#00c97d);
+    transition:1s;
+    border-radius:20px;
+}
+
+/* ================= ANALYTICS ================= */
+
+.analytics{
+    margin-top:40px;
+    display:grid;
+    grid-template-columns:2fr 1fr;
+    gap:25px;
+}
+
+.chart-box,
+.history-box{
+    background:rgba(255,255,255,0.05);
+    border-radius:25px;
+    padding:25px;
+    border:1px solid rgba(255,255,255,0.08);
+    backdrop-filter:blur(10px);
+}
+
+.chart-box h2,
+.history-box h2{
+    margin-bottom:20px;
+    font-size:28px;
+}
+
+.chart-tabs{
+    display:flex;
+    gap:15px;
+    margin-bottom:20px;
+}
+
+.tab-btn{
+    padding:12px 24px;
+    border:none;
+    border-radius:14px;
+    background:rgba(255,255,255,0.08);
+    color:white;
+    cursor:pointer;
+    transition:0.3s;
+    font-weight:bold;
+}
+
+.tab-btn:hover,
+.tab-btn.active{
+    background:#00ff9d;
+    color:black;
+    box-shadow:0 0 20px rgba(0,255,157,0.4);
+}
+
+/* ================= HISTORY ================= */
+
+.history-list{
+    max-height:520px;
+    overflow-y:auto;
+}
+
+.history-item{
+    background:rgba(255,255,255,0.04);
+    border-radius:20px;
+    padding:18px;
+    margin-bottom:15px;
+    transition:0.3s;
+}
+
+.history-item:hover{
+    transform:translateX(8px);
+    background:rgba(0,255,157,0.08);
+}
+
+.history-time{
+    font-size:26px;
+    color:#00ff9d;
+    font-weight:bold;
+    margin-bottom:10px;
+}
+
+.history-data{
+    color:#ddd;
+    line-height:1.8;
+}
+
+/* RESPONSIVE */
+
+@media(max-width:900px){
+
+    .hero-content{
+        grid-template-columns:1fr;
+    }
+
+    .hero-left h1{
+        font-size:48px;
+    }
+
+    .analytics{
+        grid-template-columns:1fr;
+    }
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- HERO -->
+
+<div class="hero">
+
+    <div class="hero-overlay"></div>
+
+    <div class="particles">
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+
+    <div class="hero-content">
+
+        <div class="hero-left">
+
+            <div class="hero-badge">
+                🌿 SMART GREENHOUSE SYSTEM
+            </div>
+
+            <h1>
+                Future Farming <br>
+                Monitoring Platform
+            </h1>
+
+            <p>
+                AI-powered greenhouse analytics dashboard with realtime monitoring, predictive insights, smart irrigation control, and environmental tracking.
+            </p>
+
+            <div class="hero-stats">
+
+                <div class="stat-item">
+                    <h2>24/7</h2>
+                    <span>Realtime Monitoring</span>
+                </div>
+
+                <div class="stat-item">
+                    <h2>AI</h2>
+                    <span>Smart Analytics</span>
+                </div>
+
+                <div class="stat-item">
+                    <h2>3 Sensors</h2>
+                    <span>Integrated System</span>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="hero-right">
+
+            <div class="floating-card">
+                <div class="floating-icon">🌱</div>
+                <div>
+                    <h3>Smart Soil Detection</h3>
+                    <p>Realtime humidity analytics</p>
+                </div>
+            </div>
+
+            <div class="floating-card">
+                <div class="floating-icon">💧</div>
+                <div>
+                    <h3>Water Monitoring</h3>
+                    <p>Automatic irrigation system</p>
+                </div>
+            </div>
+
+            <div class="floating-card">
+                <div class="floating-icon">☀️</div>
+                <div>
+                    <h3>Climate Prediction</h3>
+                    <p>Environmental intelligence</p>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+<div class="container">
+
+    <!-- CARDS -->
+    <div class="cards">
+
+        <div class="card">
+            <h3>🌱 Soil Moisture</h3>
+            <div class="value" id="soil">0%</div>
+            <div class="raw">Realtime Soil Monitoring</div>
+
+            <div class="bar">
+                <div class="bar-fill" id="soilBar"></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>💧 Water Level</h3>
+            <div class="value" id="water">0</div>
+            <div class="raw">Realtime Water Analytics</div>
+
+            <div class="bar">
+                <div class="bar-fill" id="waterBar"></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>📡 Distance Sensor</h3>
+            <div class="value" id="distance">0 cm</div>
+            <div class="raw">Ultrasonic Sensor System</div>
+
+            <div class="bar">
+                <div class="bar-fill" id="distanceBar"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ANALYTICS -->
+    <div class="analytics">
+
+        <!-- CHART -->
+        <div class="chart-box">
+
+            <h2>Realtime Analytics</h2>
+
+            <div class="chart-tabs">
+
+                <button class="tab-btn active"
+                onclick="changeChart('soil',event)">
+                    Soil
+                </button>
+
+                <button class="tab-btn"
+                onclick="changeChart('water',event)">
+                    Water
+                </button>
+
+                <button class="tab-btn"
+                onclick="changeChart('distance',event)">
+                    Distance
+                </button>
+
+            </div>
+
+            <canvas id="soilChart"></canvas>
+
+        </div>
+
+        <!-- HISTORY -->
+        <div class="history-box">
+
+            <h2>Hourly History</h2>
+
+            <div class="history-list" id="historyBody">
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+const ctx =
+document.getElementById('soilChart');
+
+let currentChart = 'soil';
+
+let labelsData = [];
+let soilData = [];
+let waterData = [];
+let distanceData = [];
+
+const chart = new Chart(ctx, {
+
+    type:'line',
+
+    data:{
+        labels:[],
+        datasets:[{
+            label:'Soil Moisture',
+            data:[],
+            borderColor:'#00ff9d',
+            backgroundColor:'rgba(0,255,157,0.15)',
+            tension:0.4,
+            fill:true,
+            pointRadius:4
+        }]
+    },
+
+    options:{
+        responsive:true,
+
+        plugins:{
+            legend:{
+                labels:{
+                    color:'white'
+                }
+            }
+        },
+
+        scales:{
+            x:{
+                ticks:{ color:'#aaa' },
+                grid:{ color:'rgba(255,255,255,0.05)' }
+            },
+
+            y:{
+                ticks:{ color:'#aaa' },
+                grid:{ color:'rgba(255,255,255,0.05)' }
+            }
+        }
+    }
+});
+
+
+// REALTIME
+async function updateRealtime(){
+
+    const response =
+    await fetch('/api/live');
+
+    const data =
+    await response.json();
+
+    document.getElementById('soil').innerText =
+    data.soil + '%';
+
+    document.getElementById('water').innerText =
+    data.water;
+
+    document.getElementById('distance').innerText =
+    data.distance + ' cm';
+
+    document.getElementById('soilBar').style.width =
+    data.soil + '%';
+
+    document.getElementById('waterBar').style.width =
+    (data.water / 20) + '%';
+
+    document.getElementById('distanceBar').style.width =
+    (data.distance * 5) + '%';
+
+    const now =
+    new Date().toLocaleTimeString();
+
+    labelsData.push(now);
+
+    soilData.push(data.soil);
+    waterData.push(data.water);
+    distanceData.push(data.distance);
+
+    if(labelsData.length > 10){
+
+        labelsData.shift();
+
+        soilData.shift();
+        waterData.shift();
+        distanceData.shift();
+    }
+
+    updateChart();
+}
+
+setInterval(updateRealtime,5000);
+
+updateRealtime();
+
+
+// CHANGE CHART
+function changeChart(type,event){
+
+    currentChart = type;
+
+    document.querySelectorAll('.tab-btn')
+    .forEach(btn =>
+        btn.classList.remove('active')
+    );
+
+    event.target.classList.add('active');
+
+    updateChart();
+}
+
+
+// UPDATE CHART
+function updateChart(){
+
+    chart.data.labels = labelsData;
+
+    if(currentChart === 'soil'){
+
+        chart.data.datasets[0].label =
+        'Soil Moisture';
+
+        chart.data.datasets[0].data =
+        soilData;
+
+        chart.data.datasets[0].borderColor =
+        '#00ff9d';
+
+        chart.data.datasets[0].backgroundColor =
+        'rgba(0,255,157,0.15)';
+    }
+
+    if(currentChart === 'water'){
+
+        chart.data.datasets[0].label =
+        'Water Level';
+
+        chart.data.datasets[0].data =
+        waterData;
+
+        chart.data.datasets[0].borderColor =
+        '#3b82f6';
+
+        chart.data.datasets[0].backgroundColor =
+        'rgba(59,130,246,0.15)';
+    }
+
+    if(currentChart === 'distance'){
+
+        chart.data.datasets[0].label =
+        'Distance Sensor';
+
+        chart.data.datasets[0].data =
+        distanceData;
+
+        chart.data.datasets[0].borderColor =
+        '#f59e0b';
+
+        chart.data.datasets[0].backgroundColor =
+        'rgba(245,158,11,0.15)';
+    }
+
+    chart.update();
+}
+
+
+// HISTORY
+async function loadHistory(){
+
+    const response =
+    await fetch('/api/history');
+
+    const data =
+    await response.json();
+
+    let html = '';
+
+    data.forEach(item => {
+
+        html += `
+        <div class="history-item">
+
+            <div class="history-time">
+                ${item.time}
+            </div>
+
+            <div class="history-data">
+                🌱 Soil: ${item.avg_soil}%<br>
+                💧 Water: ${item.avg_water}<br>
+                📡 Distance: ${item.avg_distance} cm
+            </div>
+
+        </div>
+        `;
+    });
+
+    document.getElementById('historyBody')
+    .innerHTML = html;
+}
+
+setInterval(loadHistory,5000);
+
+loadHistory();
+
+</script>
+</body>
+</html>

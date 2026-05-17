@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="id">
+        <style>
+        body { background-color: #F8F6F0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .text-primary { color: #0052CC; }
+        .bg-primary { background-color: #0052CC; }
+    </style>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Historis - Smart Agriculture</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-[#F8F6F0] text-gray-800 pb-20">
+
+    <nav class="bg-white shadow-sm px-8 py-4 flex justify-between items-center border-b border-gray-200">
+        <div class="flex items-center gap-10">
+            <div class="flex items-center gap-3 text-primary font-bold text-xl">
+                <i class="fa-solid fa-seedling text-2xl"></i><span>Smart Agriculture</span>
+            </div>
+<div class="flex items-center gap-6">
+    <a href="/" class="text-gray-500 font-bold hover:text-blue-600 transition-colors pb-1">Dashboard</a>
+    <a href="/historical-data" class="text-blue-600 font-bold border-b-2 border-blue-600 pb-1">Data Historis</a>
+    <a href="/grafik" class="text-gray-500 font-bold hover:text-blue-600 transition-colors pb-1">Grafik Analisis</a>
+</div>
+        </div>
+<div class="flex items-center gap-6">
+            <button class="text-gray-400 hover:text-gray-600"><i class="fa-regular fa-bell text-xl"></i></button>
+            <div class="flex items-center gap-3 text-right">
+                <div class="text-sm">
+                    <p class="font-bold text-gray-800 leading-tight">Admin User</p>
+                    <p class="text-xs text-[#0052CC] font-bold">KELOMPOK 2</p>
+                </div>
+                <div class="w-10 h-10 rounded-full border-2 border-[#0052CC] bg-gray-100 flex items-center justify-center text-gray-500">
+                    <i class="fa-solid fa-user"></i>
+                </div>
+            </div>
+            <a href="/logout" class="ml-2 text-red-500 hover:text-red-700 transition" title="Keluar">
+                <i class="fa-solid fa-power-off text-xl"></i>
+            </a>
+        </div> 
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-8 mt-12">
+<div class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-800">Laporan Historis Sensor</h1>
+                <p class="text-gray-500">Seluruh rekaman data yang tersimpan di database MySQL</p>
+            </div>
+            
+            <div class="bg-white p-3 rounded-lg shadow-sm border border-gray-200 flex flex-wrap items-center gap-3">
+                <div class="flex items-center gap-2">
+                    <label class="text-xs font-bold text-gray-500 uppercase">Dari:</label>
+                    <input type="date" id="startDate" class="text-sm border border-gray-200 rounded px-2 py-1 focus:outline-none focus:border-[#0052CC]">
+                </div>
+                <div class="flex items-center gap-2">
+                    <label class="text-xs font-bold text-gray-500 uppercase">Sampai:</label>
+                    <input type="date" id="endDate" class="text-sm border border-gray-200 rounded px-2 py-1 focus:outline-none focus:border-[#0052CC]">
+                </div>
+                <button onclick="applyFilter()" class="bg-gray-800 hover:bg-gray-900 text-white text-xs font-bold py-1.5 px-4 rounded transition">
+                    Terapkan
+                </button>
+                <button onclick="resetFilter()" class="text-gray-400 hover:text-red-500 text-xs font-bold py-1.5 px-2 transition" title="Hapus Filter">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="p-6 border-b border-gray-100 flex justify-between items-center">
+                <h3 class="font-bold text-gray-800">Log Aktivitas Terkini</h3>
+                <a href="/export/csv" id="exportBtn" class="bg-[#0052CC] hover:bg-blue-700 text-white text-xs font-bold py-2.5 px-5 rounded-lg transition">
+                    <i class="fa-solid fa-file-export mr-2"></i> Export ke Excel
+                </a>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-gray-50 text-gray-500 text-[10px] uppercase tracking-widest font-bold">
+                        <tr>
+                            <th class="px-6 py-4">Waktu</th>
+                            <th class="px-6 py-4 text-center">Suhu</th>
+                            <th class="px-6 py-4 text-center">Hum Udara</th>
+                            <th class="px-6 py-4 text-center">Hum Tanah</th>
+                            <th class="px-6 py-4 text-center">Cahaya</th>
+                            <th class="px-6 py-4 text-center">Level Air</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableLogsFull" class="text-sm text-gray-600 divide-y divide-gray-50">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentInterval;
+
+        async function fetchLogs(start = '', end = '') {
+            // Membentuk URL tujuan berdasarkan ada tidaknya filter
+            let url = '/api/logs';
+            let exportUrl = '/export/csv';
+            
+            if (start && end) {
+                url += `?start=${start}&end=${end}`;
+                exportUrl += `?start=${start}&end=${end}`;
+            }
+
+            // Update link di tombol Export CSV
+            document.getElementById('exportBtn').href = exportUrl;
+
+            const response = await fetch(url);
+            const logs = await response.json();
+            const tableBody = document.getElementById('tableLogsFull');
+            
+            if (logs.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="6" class="px-6 py-8 text-center text-gray-400 italic">Tidak ada data pada rentang tanggal tersebut.</td></tr>`;
+                return;
+            }
+
+            tableBody.innerHTML = logs.map(log => `
+                <tr class="hover:bg-blue-50/30 transition">
+                    <td class="px-6 py-4 font-medium text-gray-800">${log.waktu}</td>
+                    <td class="px-6 py-4 text-center">${log.suhu}°C</td>
+                    <td class="px-6 py-4 text-center">${log.kel_udara}%</td>
+                    <td class="px-6 py-4 text-center">${log.kel_tanah}%</td>
+                    <td class="px-6 py-4 text-center">${log.cahaya} lx</td>
+                    <td class="px-6 py-4 text-center">
+                        <span class="px-2 py-1 rounded-md ${log.level_air < 20 ? 'bg-red-50 text-red-600 font-bold' : 'bg-green-50 text-green-600'}">${log.level_air}%</span>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Fungsi saat tombol Terapkan diklik
+        function applyFilter() {
+            const start = document.getElementById('startDate').value;
+            const end = document.getElementById('endDate').value;
+            
+            if (start && end) {
+                clearInterval(currentInterval); // Hentikan refresh otomatis agar tabel tidak berkedip
+                fetchLogs(start, end);
+            } else {
+                alert("Silakan pilih tanggal mulai dan tanggal akhir.");
+            }
+        }
+
+        // Fungsi saat tombol Silang (X) diklik
+        function resetFilter() {
+            document.getElementById('startDate').value = '';
+            document.getElementById('endDate').value = '';
+            fetchLogs(); // Ambil semua data lagi
+            
+            // Nyalakan kembali refresh otomatis
+            clearInterval(currentInterval);
+            currentInterval = setInterval(() => fetchLogs(), 5000);
+        }
+
+        fetchLogs();
+        currentInterval = setInterval(() => fetchLogs(), 5000);
+    </script>
+</body>
+</html>
